@@ -29,6 +29,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       echo "--> Provisionando a VM-PROXY"
       apt-get update
       apt-get install -y nginx
+      mv /vagrant/encurtador.conf /etc/nginx/sites-available/
+      sudo rm /etc/nginx/sites-enabled/default
+      sudo ln -s /etc/nginx/sites-available/encurtador.conf /etc/nginx/sites-enabled/
+      # sudo nginx -t
+      # sudo systemctl reload nginx
     SHELL
   end
 
@@ -53,6 +58,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       apt-get install -y nodejs
       # Instala o PM2 globalmente
       npm install -g pm2
+      cd /vagrant
+      # npm init -y
+      # pm2 start index.js --name encurtador
     SHELL
   end
 
