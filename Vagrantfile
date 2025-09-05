@@ -19,21 +19,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     app.vm.network "private_network", ip: "192.168.10.102", virtualbox__intnet: "redeapp"
     
     # Provisionamento: Instala o Node.js (usando o repositório oficial para uma versão recente)
-    app.vm.provision "shell", inline: <<-SHELL
-    echo "--> Provisionando a VM-APP"
-    apt-get update
-    apt-get install -y ca-certificates curl gnupg
-    mkdir -p /etc/apt/keyrings
-    curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
-    NODE_MAJOR=20
-    echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$NODE_MAJOR.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list
-    apt-get update
-    apt-get install -y nodejs
-    npm install -g pm2
-    cd /vagrant
-    npm init -y
-    pm2 start app/index.js --name encurtador
-    SHELL
+    app.vm.provision "shell", path: "appconfig.sh"
   end
   
   # --- 1. CONFIGURAÇÃO DA VM-PROXY ---
@@ -51,16 +37,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     proxy.vm.network "private_network", ip: "192.168.10.101", virtualbox__intnet: "redeapp"
 
     # Provisionamento: Comandos que rodam automaticamente para instalar o Nginx.
-    proxy.vm.provision "shell", inline: <<-SHELL
-      echo "--> Provisionando a VM-PROXY"
-      apt-get update
-      apt-get install -y nginx
-      cp /vagrant/encurtador.conf /etc/nginx/sites-available/
-      sudo rm /etc/nginx/sites-enabled/default
-      sudo ln -s /etc/nginx/sites-available/encurtador.conf /etc/nginx/sites-enabled/
-      sudo nginx -t
-      sudo systemctl reload nginx
-    SHELL
+    proxy.vm.provision "shell", path: "proxyconfig.sh"
   end
 
   # --- 3. CONFIGURAÇÃO DA VM-BD ---
@@ -72,22 +49,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     db.vm.network "private_network", ip: "192.168.10.103", virtualbox__intnet: "redeapp"
 
     # Provisionamento: Instala e configura o PostgreSQL para aceitar conexões da VM-APP
-    db.vm.provision "shell", inline: <<-SHELL
-      echo "--> Provisionando a VM-BD"
-      apt-get update
-      apt-get install -y postgresql postgresql-contrib
-
-      # Configura o PostgreSQL para aceitar conexões de qualquer IP na rede interna
-      echo "--> Configurando PostgreSQL"
-      sed -i "s/#listen_addresses = 'localhost'/listen_addresses = '*'/" /etc/postgresql/14/main/postgresql.conf
-      
-      # Libera o acesso para o usuário postgres na rede interna (para testes iniciais)
-      # Em um ambiente real, criaríamos um usuário específico para a aplicação.
-      echo "host    all             all             192.168.10.0/24         md5" >> /etc/postgresql/14/main/pg_hba.conf
-
-      # Reinicia o PostgreSQL para aplicar as configurações
-      systemctl restart postgresql
-    SHELL
+    db.vm.provision "shell", path: "dbconfig.sh"
   end
 
   # Configurações do Provedor VirtualBox (opcional, mas recomendado)
