@@ -10,6 +10,32 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # O Vagrant irá baixá-la automaticamente na primeira vez.
   config.vm.box = "ubuntu/jammy64" # Ubuntu 22.04 LTS
 
+  # --- 2. CONFIGURAÇÃO DA VM-APP ---
+  config.vm.define "app" do |app|
+    
+    app.vm.hostname = "app"
+    
+    # Placa de Rede 1: Apenas Rede Interna, garantindo o isolamento.
+    app.vm.network "private_network", ip: "192.168.10.102", virtualbox__intnet: "redeapp"
+    
+    # Provisionamento: Instala o Node.js (usando o repositório oficial para uma versão recente)
+    app.vm.provision "shell", inline: <<-SHELL
+    echo "--> Provisionando a VM-APP"
+    apt-get update
+    apt-get install -y ca-certificates curl gnupg
+    mkdir -p /etc/apt/keyrings
+    curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
+    NODE_MAJOR=20
+    echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$NODE_MAJOR.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list
+    apt-get update
+    apt-get install -y nodejs
+    npm install -g pm2
+    cd /vagrant
+    npm init -y
+    pm2 start app/index.js --name encurtador
+    SHELL
+  end
+  
   # --- 1. CONFIGURAÇÃO DA VM-PROXY ---
   config.vm.define "proxy" do |proxy|
     
@@ -29,38 +55,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       echo "--> Provisionando a VM-PROXY"
       apt-get update
       apt-get install -y nginx
-      mv /vagrant/encurtador.conf /etc/nginx/sites-available/
+      cp /vagrant/encurtador.conf /etc/nginx/sites-available/
       sudo rm /etc/nginx/sites-enabled/default
       sudo ln -s /etc/nginx/sites-available/encurtador.conf /etc/nginx/sites-enabled/
-      # sudo nginx -t
-      # sudo systemctl reload nginx
-    SHELL
-  end
-
-  # --- 2. CONFIGURAÇÃO DA VM-APP ---
-  config.vm.define "app" do |app|
-
-    app.vm.hostname = "app"
-
-    # Placa de Rede 1: Apenas Rede Interna, garantindo o isolamento.
-    app.vm.network "private_network", ip: "192.168.10.102", virtualbox__intnet: "redeapp"
-
-    # Provisionamento: Instala o Node.js (usando o repositório oficial para uma versão recente)
-    app.vm.provision "shell", inline: <<-SHELL
-      echo "--> Provisionando a VM-APP"
-      apt-get update
-      apt-get install -y ca-certificates curl gnupg
-      mkdir -p /etc/apt/keyrings
-      curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
-      NODE_MAJOR=20
-      echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$NODE_MAJOR.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list
-      apt-get update
-      apt-get install -y nodejs
-      # Instala o PM2 globalmente
-      npm install -g pm2
-      cd /vagrant
-      # npm init -y
-      # pm2 start index.js --name encurtador
+      sudo nginx -t
+      sudo systemctl reload nginx
     SHELL
   end
 
