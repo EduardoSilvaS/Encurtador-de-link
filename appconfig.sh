@@ -9,7 +9,11 @@ echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.co
 apt-get update
 apt-get install -y nodejs
 npm install -g pm2
-cd /vagrant
+echo "--> Criando ENV"
+cd /vagrant/app
+cp .env.example .env
+cd ..
 npm init -y
-pm2 start app/index.js --name encurtador
+cd app
+pm2 start index.js --name encurtador
 echo "--> Termino da configuracao da VM APP"

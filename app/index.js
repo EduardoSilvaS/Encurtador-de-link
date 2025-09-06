@@ -1,5 +1,3 @@
-// index.js (versão finexitl da lógica)
-
 // Carrega as variáveis do arquivo .env para process.env
 require('dotenv').config();
 
@@ -11,7 +9,6 @@ const app = express();
 const PORT = 3000;
 
 // --- Configuração da Conexão com o Banco de Dados ---
-// O Pool gerencia múltiplas conexões, é mais eficiente que um Client único.
 const pool = new Pool({
   user: process.env.DB_USER,
   host: process.env.DB_HOST,
@@ -39,22 +36,15 @@ function generateShortCode(length = 7) {
 // 1. Endpoint para encurtar a URL (Lógica Real)
 app.post('/encurtar', async (req, res) => {
   const { longUrl } = req.body;
-
   if (!longUrl) {
     return res.status(400).json({ error: 'URL não fornecida.' });
   }
-
   try {
     const code = generateShortCode();
-
-    // Insere o novo link no banco de dados.
-    // Usamos query parametrizada ($1, $2) para prevenir SQL Injection.
     const query = 'INSERT INTO links(code, original_url) VALUES($1, $2) RETURNING code';
     const result = await pool.query(query, [code, longUrl]);
-
     const newCode = result.rows[0].code;
     const shortUrl = `${process.env.BASE_URL}/${newCode}`;
-
     res.status(201).json({ shortUrl });
   } catch (error) {
     console.error('Erro ao salvar no banco de dados:', error);
@@ -65,18 +55,14 @@ app.post('/encurtar', async (req, res) => {
 // 2. Endpoint de Redirecionamento
 app.get('/:code', async (req, res) => {
   const { code } = req.params;
-
   try {
     const query = 'SELECT original_url FROM links WHERE code = $1';
     const result = await pool.query(query, [code]);
-
     if (result.rows.length > 0) {
       const originalUrl = result.rows[0].original_url;
-      // Redirecionamento permanente (301) para a URL original
       return res.redirect(301, originalUrl);
     } else {
-      // Se o código não for encontrado, envia para a página inicial ou uma de erro 404
-      return res.status(404).sendFile(path.join(__dirname, 'public', '404.html')); // (Bônus: criar um 404.html!)
+      return res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
     }
   } catch (error) {
     console.error('Erro ao buscar no banco de dados:', error);
@@ -84,7 +70,29 @@ app.get('/:code', async (req, res) => {
   }
 });
 
-// Inicia o servidor
-app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
-});
+
+// --- INÍCIO DA MUDANÇA ---
+// Adicionamos um teste de conexão para diagnosticar o problema.
+async function testDbConnection() {
+  let client;
+  try {
+    client = await pool.connect();
+    console.log('✅ Conexão com o banco de dados estabelecida com sucesso!');
+    client.release();
+    
+    // Se a conexão for bem-sucedida, iniciamos o servidor.
+    app.listen(PORT, () => {
+      console.log(`Servidor rodando na porta ${PORT}`);
+    });
+
+  } catch (err) {
+    console.error('❌ ERRO FATAL: Falha ao conectar com o banco de dados.');
+    console.error(err.stack);
+    // Se não conseguir conectar, o processo deve parar com um código de erro.
+    process.exit(1);
+  }
+}
+
+// Inicia o teste de conexão e, se bem-sucedido, o servidor.
+testDbConnection();
+// --- FIM DA MUDANÇA ---
