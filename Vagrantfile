@@ -50,9 +50,19 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
     # Provisionamento: Instala e configura o PostgreSQL para aceitar conexões da VM-APP
     db.vm.provision "shell", path: "dbconfig.sh"
+
+    # db.trigger.after :up do |trigger|
+    #   trigger.info = "Desativando enp0s3 nas VMs app e db"
+    #   trigger.run = {
+    #     inline: [
+    #       "vagrant ssh app -c 'sudo ip link set enp0s3 down'",
+    #       "vagrant ssh db -c 'sudo ip link set enp0s3 down'"
+    #     ]
+    #   }
+    # end  
+
   end
 
-  # Configurações do Provedor VirtualBox (opcional, mas recomendado)
   # Define a memória e a quantidade de CPUs para cada VM.
   config.vm.provider "virtualbox" do |v|
     v.memory = 1024 # 1GB de RAM
