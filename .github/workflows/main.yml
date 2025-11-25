@@ -2,9 +2,9 @@ name: Testes de Integração (Manual e Auto)
 
 on:
   push:
-    branches: [ "workflowTestGiovani", "master" ]
+    branches: [ "workflowTestGiovani", "master","main" ]
   pull_request:
-    branches: [ "workflowTestGiovani", "master" ]
+    branches: [ "workflowTestGiovani", "master", "main" ]
   # Permite executar manualmente na aba Actions do GitHub
   workflow_dispatch:
 
