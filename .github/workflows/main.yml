@@ -1,7 +1,7 @@
 on:
   pull_request:
     branches:
-    - projectUsingContainers
+    - projectUsingContainers, main
 jobs:
   testes-unitarios:
     runs-on: ubuntu-latest
