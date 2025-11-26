@@ -3,7 +3,7 @@ FROM node:18-alpine
 # Cria diretório de trabalho
 WORKDIR /usr/src/app
 
-# Copia package.json e package-lock (se houver) e instala dependências
+# Copia package.json  e instala dependências
 COPY package*.json ./
 RUN npm ci --only=production
 

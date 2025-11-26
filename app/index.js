@@ -6,7 +6,7 @@ const path = require('path');
 const { Pool } = require('pg'); // Importa o Pool do driver do PostgreSQL
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 // --- Configuração da Conexão com o Banco de Dados ---
 const pool = new Pool({
@@ -14,7 +14,7 @@ const pool = new Pool({
   host: process.env.DB_HOST,
   database: process.env.DB_DATABASE,
   password: process.env.DB_PASSWORD,
-  port: process.env.DB_PORT,
+  port: process.env.DB_PORT ? parseInt(process.env.DB_PORT, 10) : 5432,
 });
 
 // --- Middlewares Essenciais ---
