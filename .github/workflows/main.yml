@@ -1,7 +1,8 @@
 on:
-  pull_request:
+  workflow_dispatch:
+  push:
     branches:
-    - projectUsingContainers, main
+    - main
 jobs:
   testes-unitarios:
     runs-on: ubuntu-latest
