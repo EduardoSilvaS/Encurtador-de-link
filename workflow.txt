@@ -11,6 +11,7 @@ jobs:
     - name: Checkout do código
       uses: actions/checkout@v3
 
+
     # 2. Prepara o ambiente Node.js
     - name: Configurar Node.js
       uses: actions/setup-node@v3
