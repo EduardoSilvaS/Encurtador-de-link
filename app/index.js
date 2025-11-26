@@ -3,6 +3,7 @@ require('dotenv').config();
 
 const express = require('express');
 const path = require('path');
+const { generateShortCode } = require('./generateShortCode'); 
 const { Pool } = require('pg'); // Importa o Pool do driver do PostgreSQL
 
 const app = express();
@@ -21,15 +22,6 @@ const pool = new Pool({
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
-// --- Função Auxiliar para Gerar o Código Curto ---
-function generateShortCode(length = 7) {
-  const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  let result = '';
-  for (let i = 0; i < length; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return result;
-}
 
 // --- Rotas da API ---
 
