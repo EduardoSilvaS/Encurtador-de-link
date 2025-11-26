@@ -1,0 +1,40 @@
+services:
+  db:
+    image: postgres:14
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: encurtador_user
+      POSTGRES_PASSWORD: senha_super_segura_123
+      POSTGRES_DB: encurtador_db
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - encnet
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      DB_USER: encurtador_user
+      DB_PASSWORD: senha_super_segura_123
+      DB_HOST: db
+      DB_DATABASE: encurtador_db
+      DB_PORT: 5432
+      BASE_URL: http://localhost:3000
+      PORT: 3000
+    ports:
+      - "3000:3000"
+    networks:
+      - encnet
+
+volumes:
+  db-data:
+
+networks:
+  encnet:
+    driver: bridge
