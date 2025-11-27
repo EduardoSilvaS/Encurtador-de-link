@@ -1,6 +1,9 @@
+
 on:
-  workflow_dispatch:
   push:
+    branches:
+    - projectUsingContainers, main
+  pull_request:
     branches:
     - main
 jobs:
