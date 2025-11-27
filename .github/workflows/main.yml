@@ -2,11 +2,9 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches:
-    - projectUsingContainers, main
+    branches: [ "main", "projectUsingContainers" ]
   pull_request:
-    branches:
-    - main
+    branches: [ "main" ]
 jobs:
   testes-unitarios:
     runs-on: ubuntu-latest
