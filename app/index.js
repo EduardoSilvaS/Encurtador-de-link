@@ -63,28 +63,28 @@ app.get('/:code', async (req, res) => {
 });
 
 
-// --- INÍCIO DA MUDANÇA ---
-// Adicionamos um teste de conexão para diagnosticar o problema.
-async function testDbConnection() {
+async function startServer() {
   let client;
   try {
     client = await pool.connect();
-    console.log('✅ Conexão com o banco de dados estabelecida com sucesso!');
+    console.log('✅ Conexão com o banco de dados estabelecida!');
     client.release();
     
-    // Se a conexão for bem-sucedida, iniciamos o servidor.
     app.listen(PORT, () => {
       console.log(`Servidor rodando na porta ${PORT}`);
     });
 
   } catch (err) {
-    console.error('❌ ERRO FATAL: Falha ao conectar com o banco de dados.');
-    console.error(err.stack);
-    // Se não conseguir conectar, o processo deve parar com um código de erro.
-    process.exit(1);
+    console.error('❌ Erro ao conectar no banco:', err);
+    // Em produção, talvez você queira dar exit(1), mas para teste vamos apenas logar
   }
 }
 
-// Inicia o teste de conexão e, se bem-sucedido, o servidor.
-testDbConnection();
-// --- FIM DA MUDANÇA ---
+// Só iniciamos o servidor se este arquivo for executado diretamente (node index.js)
+// Se for importado pelo Jest, não fazemos nada automático.
+if (require.main === module) {
+  startServer();
+}
+
+// Exportamos o app e o pool para usar nos testes
+module.exports = { app, pool };
