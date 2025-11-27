@@ -24,6 +24,7 @@ jobs:
     # 3. Instala as dependências
     - name: Instalar dependências
       run: npm install
+      run: npm install supertest --include=dev
 
     # 4. Executa os testes
     - name: Rodar Testes com Jest
