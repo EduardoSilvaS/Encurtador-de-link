@@ -1,30 +1,55 @@
-name: CI/CD Pipeline
+name: Integração Contínua (Node.js + Postgres)
 
 on:
   push:
     branches: [ "main", "projectUsingContainers" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "projectUsingContainers" ]
+
 jobs:
-  testes-unitarios:
+  testes-unitarios-e-integracao:
+    name: Rodar Testes Completos
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_USER: encurtador_user
+          POSTGRES_PASSWORD: senha_segura_para_teste
+          POSTGRES_DB: encurtador_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
-    # 1. Baixa o código do repositório
     - name: Checkout do código
       uses: actions/checkout@v3
 
-    # 2. Prepara o ambiente Node.js
     - name: Configurar Node.js
       uses: actions/setup-node@v3
       with:
         node-version: '18'
         cache: 'npm'
 
-    # 3. Instala as dependências
     - name: Instalar dependências
-      run: npm install
+      run: npm ci
 
-    # 4. Executa os testes
-    - name: Rodar Testes com Jest
+    - name: Aguardar DB e Criar Tabela
+      env:
+        PGPASSWORD: senha_segura_para_teste
+      run: |
+        psql -h localhost -U encurtador_user -d encurtador_db -c "CREATE TABLE IF NOT EXISTS links (id SERIAL PRIMARY KEY, code VARCHAR(10) UNIQUE NOT NULL, original_url TEXT NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);"
+
+    - name: Rodar Testes
+      env:
+        DB_HOST: localhost
+        DB_USER: encurtador_user
+        DB_PASSWORD: senha_segura_para_teste
+        DB_DATABASE: encurtador_db
+        DB_PORT: 5432
       run: npm test
