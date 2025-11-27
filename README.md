@@ -77,3 +77,5 @@ Observações:
 - O `docker-compose.yml` cria dois serviços: `db` (Postgres 14) e `app` (Node). As variáveis de conexão são passadas via `environment` no `docker-compose.yml`.
 - Se preferir manter variáveis em arquivo `.env`, crie um `.env` local e ajuste `docker-compose.yml` para usar `env_file`.
 - O `Vagrantfile` continua no repositório apenas para referência. Quando estiver satisfeito com a migração, você pode removê-lo.
+
+![Status dos Testes](https://github.com/EduardoSilvaS/Encurtador-de-link/actions/workflows/main.yml/badge.svg)
