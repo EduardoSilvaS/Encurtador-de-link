@@ -1,6 +1,7 @@
 name: Integração Contínua (Node.js + Postgres)
 
 on:
+  workflow_dispatch:
   push:
     branches: [ "main", "projectUsingContainers" ]
   pull_request:
